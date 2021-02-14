@@ -1,0 +1,20 @@
+{
+    "Name": "NOSHTO d.o.o.",
+    "TIN": "03036286",
+    "VAT": "03036286",
+    "Address": "",
+    "Town": "",
+    "Country": "MNE",
+
+    "Environment": "staging",
+    
+    "BusinUnitCode": "db891qz567",
+	"TCRCode": "xk405dx088",
+	"SoftCode": "ge788jm169",
+	"OperatorCode": "xg149gu972",
+
+    "Typless":  {
+        "APIKey": "ebf242831146438ab6bb496d60c4f4e1", 
+        "Template": "invoice-template"
+    }
+}
