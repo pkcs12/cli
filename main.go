@@ -92,11 +92,7 @@ func main() {
 	fmt.Println("Available actions:")
 	fmt.Println("[1] Register invoice")
 	fmt.Println("[2] Register invoice manually")
-	// fmt.Println("[3] Bridge - geneate request xml from existing extracted json file")
-	// fmt.Println("[4] IIC - geneate IIC and IICSignature from parameters given in request xml")
-	// fmt.Println("[5] Digitally sign request xml")
-	// fmt.Println("[6] Register request xml")
-	// fmt.Println("[7] Save results in specific format")
+
 	fmt.Println("Press any other kay to exit")
 
 	fmt.Printf("Choose an action: ")
@@ -134,7 +130,7 @@ func registerInvoice() {
 
 	// Invoice file
 	fmt.Print("Please provide invoice file path: ")
-	extractInFile := FatalIfNoValue(fmt.Scan("Please provide invoice file path: ")).(string)
+	extractInFile := Scan("Please provide invoice file path: ")
 
 	fmt.Println(extractInFile)
 	if fi := valueOrExitOnError(os.Stat(extractInFile)).(os.FileInfo); fi.IsDir() {
