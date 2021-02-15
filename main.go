@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -38,7 +39,15 @@ type Config struct {
 }
 
 var (
-	workDir string
+	workDir     = ""
+	extractExec = "./extract"
+	bridgeExec  = "./bridge"
+	iicExec     = "./iic"
+	dsigExec    = "./dsig"
+	regExec     = "./reg"
+	keepExec    = "./keep"
+	qrcExec     = "./qrc"
+	pdfExec     = "./pdf"
 )
 
 // FatalIfNoValue returns a value is no erro, exits otherwise
@@ -87,6 +96,16 @@ func Scan(msg string) string {
 }
 
 func main() {
+	if runtime.GOOS == "windows" {
+		extractExec = strings.Join([]string{extractExec, "exe"}, ".")
+		bridgeExec = strings.Join([]string{bridgeExec, "exe"}, ".")
+		iicExec = strings.Join([]string{iicExec, "exe"}, ".")
+		dsigExec = strings.Join([]string{dsigExec, "exe"}, ".")
+		regExec = strings.Join([]string{regExec, "exe"}, ".")
+		keepExec = strings.Join([]string{keepExec, "exe"}, ".")
+		qrcExec = strings.Join([]string{qrcExec, "exe"}, ".")
+		pdfExec = strings.Join([]string{pdfExec, "exe"}, ".")
+	}
 	fmt.Println("EFI Command Line Interface")
 	fmt.Println("--------------------------")
 	fmt.Println("Available actions:")
@@ -147,7 +166,7 @@ func registerInvoice() {
 	extractOutFile := path.Join(workDir, fileName)
 	if !SkipExtract {
 		cmd := exec.Command(
-			"./extract",
+			extractExec,
 			"-key", cfg.Typless.APIKey,
 			"-template", cfg.Typless.Template,
 			"-in", extractInFile,
@@ -164,7 +183,7 @@ func registerInvoice() {
 	fileName = strings.Join([]string{fileNameNoExt, "bridge"}, ".")
 	bridgeOutFile := path.Join(workDir, fileName)
 	cmd := exec.Command(
-		"./bridge",
+		bridgeExec,
 		"-soft", cfg.SoftCode,
 		"-op", cfg.OperatorCode,
 		"-busin", cfg.BusinUnitCode,
@@ -182,7 +201,7 @@ func registerInvoice() {
 	fileName = strings.Join([]string{fileNameNoExt, "iic"}, ".")
 	iicOutFile := path.Join(workDir, fileName)
 	cmd = exec.Command(
-		"./iic",
+		iicExec,
 		"-pin", pin,
 		"-in", bridgeOutFile,
 		"-out", iicOutFile,
@@ -197,7 +216,7 @@ func registerInvoice() {
 	fileName = strings.Join([]string{fileNameNoExt, "dsig"}, ".")
 	dsigOutFile := path.Join(workDir, fileName)
 	cmd = exec.Command(
-		"./dsig",
+		dsigExec,
 		"-pin", pin,
 		"-busin", cfg.BusinUnitCode,
 		"-soft", cfg.SoftCode,
@@ -214,7 +233,7 @@ func registerInvoice() {
 	fileName = strings.Join([]string{fileNameNoExt, "reg"}, ".")
 	regOutFile := path.Join(workDir, fileName)
 	cmd = exec.Command(
-		"./reg",
+		regExec,
 		"-pin", pin,
 		"-env", cfg.Environment,
 		"-in", dsigOutFile,
@@ -228,7 +247,7 @@ func registerInvoice() {
 
 	// KEEP
 	cmd = exec.Command(
-		"./keep",
+		keepExec,
 		"-req", dsigOutFile,
 		"-resp", regOutFile,
 	)
@@ -242,7 +261,7 @@ func registerInvoice() {
 	fileName = strings.Join([]string{fileNameNoExt, "qrc"}, ".")
 	qrcOutFile := path.Join(workDir, fileName)
 	cmd = exec.Command(
-		"./qrc",
+		qrcExec,
 		"-req", dsigOutFile,
 		"-resp", regOutFile,
 		"-out", qrcOutFile,
@@ -258,7 +277,7 @@ func registerInvoice() {
 	fileName = strings.Join([]string{fileNameNoExt, "reg", "pdf"}, ".")
 	pdfOutFile := path.Join(workDir, fileName)
 	cmd = exec.Command(
-		"./pdf",
+		pdfExec,
 		"-in", extractInFile,
 		"-out", pdfOutFile,
 		"-req", dsigOutFile,
@@ -309,29 +328,11 @@ func registerInvoiceManually() {
 	fileName := strings.Join([]string{fileNameNoExt, "bridge"}, ".")
 	bridgeOutFile := path.Join(workDir, fileName)
 
-	// // BRIDGE
-	// fileName = strings.Join([]string{fileNameNoExt, "bridge"}, ".")
-	// bridgeOutFile := path.Join(workDir, fileName)
-	// cmd := exec.Command(
-	// 	"./bridge",
-	// 	"-soft", cfg.SoftCode,
-	// 	"-op", cfg.OperatorCode,
-	// 	"-busin", cfg.BusinUnitCode,
-	// 	"-tcr", cfg.TCRCode,
-	// 	"-in", extractOutFile,
-	// 	"-out", bridgeOutFile,
-	// )
-	// cmd.Stdout = os.Stdout
-	// cmd.Stderr = os.Stderr
-	// fmt.Print("Bridging: ")
-	// exitOnError(cmd.Run())
-	// fmt.Println("OK")
-
 	// IIC
 	fileName = strings.Join([]string{fileNameNoExt, "iic"}, ".")
 	iicOutFile := path.Join(workDir, fileName)
 	cmd := exec.Command(
-		"./iic",
+		iicExec,
 		"-pin", pin,
 		"-in", bridgeOutFile,
 		"-out", iicOutFile,
@@ -346,7 +347,7 @@ func registerInvoiceManually() {
 	fileName = strings.Join([]string{fileNameNoExt, "dsig"}, ".")
 	dsigOutFile := path.Join(workDir, fileName)
 	cmd = exec.Command(
-		"./dsig",
+		dsigExec,
 		"-pin", pin,
 		"-busin", cfg.BusinUnitCode,
 		"-soft", cfg.SoftCode,
@@ -363,7 +364,7 @@ func registerInvoiceManually() {
 	fileName = strings.Join([]string{fileNameNoExt, "reg"}, ".")
 	regOutFile := path.Join(workDir, fileName)
 	cmd = exec.Command(
-		"./reg",
+		regExec,
 		"-pin", pin,
 		"-env", cfg.Environment,
 		"-in", dsigOutFile,
@@ -377,7 +378,7 @@ func registerInvoiceManually() {
 
 	// KEEP
 	cmd = exec.Command(
-		"./keep",
+		keepExec,
 		"-req", dsigOutFile,
 		"-resp", regOutFile,
 	)
@@ -391,7 +392,7 @@ func registerInvoiceManually() {
 	fileName = strings.Join([]string{fileNameNoExt, "qrc"}, ".")
 	qrcOutFile := path.Join(workDir, fileName)
 	cmd = exec.Command(
-		"./qrc",
+		qrcExec,
 		"-req", dsigOutFile,
 		"-resp", regOutFile,
 		"-out", qrcOutFile,
