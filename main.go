@@ -15,7 +15,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/beevik/etree"
 	"golang.org/x/term"
 )
 
@@ -258,7 +257,7 @@ func registerInvoice() {
 	fmt.Println("OK")
 
 	// QRC
-	fileName = strings.Join([]string{fileNameNoExt, "qrc"}, ".")
+	fileName = strings.Join([]string{fileNameNoExt, "png"}, ".")
 	qrcOutFile := path.Join(workDir, fileName)
 	cmd = exec.Command(
 		qrcExec,
@@ -389,7 +388,7 @@ func registerInvoiceManually() {
 	fmt.Println("OK")
 
 	// QRC
-	fileName = strings.Join([]string{fileNameNoExt, "qrc"}, ".")
+	fileName = strings.Join([]string{fileNameNoExt, "png"}, ".")
 	qrcOutFile := path.Join(workDir, fileName)
 	cmd = exec.Command(
 		qrcExec,
@@ -404,36 +403,55 @@ func registerInvoiceManually() {
 	exitOnError(cmd.Run())
 	fmt.Println("OK")
 
-	doc := etree.NewDocument()
-	exitOnError(doc.ReadFromFile(dsigOutFile))
+	// PDF
+	fileName = strings.Join([]string{fileNameNoExt, "reg", "pdf"}, ".")
+	pdfOutFile := path.Join(workDir, fileName)
+	cmd = exec.Command(
+		pdfExec,
+		"-out", pdfOutFile,
+		"-req", dsigOutFile,
+		"-resp", regOutFile,
+		"-qr", qrcOutFile,
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	fmt.Print("PDF: ")
+	exitOnError(cmd.Run())
+	fmt.Println("OK")
 
-	invoice := doc.FindElement("//Invoice")
-	if invoice == nil {
-		fmt.Fprintln(os.Stderr, errors.New("Invalid XML, no Invoice"))
-		os.Exit(1)
-	}
-	attr := invoice.SelectAttr("IIC")
-	if attr == nil {
-		fmt.Fprintln(os.Stderr, errors.New("Invalid XML, no IIC"))
-		os.Exit(1)
-	}
-	IIC := attr.Value
-
-	doc = etree.NewDocument()
-	exitOnError(doc.ReadFromFile(regOutFile))
-
-	fic := doc.FindElement("//FIC")
-	if invoice == nil {
-		fmt.Fprintln(os.Stderr, errors.New("Invalid XML, no FIC"))
-		os.Exit(1)
-	}
-	FIC := fic.Text()
-
-	fmt.Println("Invoice registered")
-	fmt.Fprintf(os.Stdout, "IKOF (Kôd izdavaoca računa): %v\n", IIC)
-	fmt.Fprintf(os.Stdout, "JIKR (Jedinstveni identifikacioni kod računa): %v\n", FIC)
-	fmt.Fprintf(os.Stdout, "QR Code saved at: %v\n", qrcOutFile)
-
-	fmt.Print("Pres enter for exit")
+	fmt.Printf("Invoice registered. New PDF file: %s\n\nEnjoy your day\nPres enter for exit\n", pdfOutFile)
 	fmt.Scan()
+
+	// doc := etree.NewDocument()
+	// exitOnError(doc.ReadFromFile(dsigOutFile))
+
+	// invoice := doc.FindElement("//Invoice")
+	// if invoice == nil {
+	// 	fmt.Fprintln(os.Stderr, errors.New("Invalid XML, no Invoice"))
+	// 	os.Exit(1)
+	// }
+	// attr := invoice.SelectAttr("IIC")
+	// if attr == nil {
+	// 	fmt.Fprintln(os.Stderr, errors.New("Invalid XML, no IIC"))
+	// 	os.Exit(1)
+	// }
+	// IIC := attr.Value
+
+	// doc = etree.NewDocument()
+	// exitOnError(doc.ReadFromFile(regOutFile))
+
+	// fic := doc.FindElement("//FIC")
+	// if invoice == nil {
+	// 	fmt.Fprintln(os.Stderr, errors.New("Invalid XML, no FIC"))
+	// 	os.Exit(1)
+	// }
+	// FIC := fic.Text()
+
+	// fmt.Println("Invoice registered")
+	// fmt.Fprintf(os.Stdout, "IKOF (Kôd izdavaoca računa): %v\n", IIC)
+	// fmt.Fprintf(os.Stdout, "JIKR (Jedinstveni identifikacioni kod računa): %v\n", FIC)
+	// fmt.Fprintf(os.Stdout, "QR Code saved at: %v\n", qrcOutFile)
+
+	// fmt.Print("Pres enter for exit")
+	// fmt.Scan()
 }

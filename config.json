@@ -5,6 +5,8 @@
     "Address": "",
     "Town": "",
     "Country": "MNE",
+    "Phone": "",
+    "Fax": "",
 
     "Environment": "staging",
     
